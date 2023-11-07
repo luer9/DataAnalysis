@@ -28,10 +28,11 @@ object Configuration {
     val conf = new SparkConf()
       .setAppName("DataAnaysis")
       .setMaster("local[*]")
+      .set("spark.sql.crossJoin.enabled", "true")
 //      .set("spark.sql.shuffle.partitions", "12")
 //      .set("spark.default.parallelism", "24")
-//      .set("spark.driver.memory", "38G")
-//      .set("spark.executor.memory", "38G")
+//      .set("spark.driver.memory", "20G")
+//      .set("spark.executor.memory", "20G")
     conf
   }
 

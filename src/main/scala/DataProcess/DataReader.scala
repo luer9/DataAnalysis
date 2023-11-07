@@ -19,4 +19,10 @@ object DataReader {
     predsDF.show(false)
     predsDF
   }
+
+  def getSos(SosFile: String): DataFrame = {
+    val soDF = spark.sqlContext.read.parquet(SosFile).toDF()
+    soDF.show(false)
+    soDF
+  }
 }

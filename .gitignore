@@ -1,5 +1,7 @@
 .bsp/
 .idea/
+query/
+queryID/
 data/
 VP/
 project/
