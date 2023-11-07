@@ -10,4 +10,5 @@ libraryDependencies ++= Seq(
 )
 libraryDependencies += "org.xerial.snappy" % "snappy-java" % "1.1.8.4" % "test"
 libraryDependencies += "com.crealytics" %% "spark-excel" % "0.12.0"
+libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.6.11"
 // libraryDependencies += "org.apache.jena" % "apache-jena-libs" % "3.7.0"

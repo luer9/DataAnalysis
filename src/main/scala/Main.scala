@@ -2,8 +2,11 @@ import org.apache.spark.SparkContext
 
 import java.nio.file.{Path, Paths}
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import scala.collection.mutable.ListBuffer
 import java.io.{File, PrintWriter}
+import scala.io.Source
 
 object Main {
   val spark: SparkSession = Configuration.Configuration.sparkSession
@@ -11,18 +14,18 @@ object Main {
   import spark.implicits._
 
   def main(args: Array[String]): Unit = {
-    val inputTriFile = "F:\\dbproject\\NCI_MAPPING\\data\\dbpedia\\dbpedia.tri"
-    val inputPredFile = "F:\\dbproject\\NCI_MAPPING\\data\\dbpedia\\dbpedia.p"
-    val inputSoFile = "F:\\dbproject\\NCI_MAPPING\\data\\dbpedia\\dbpedia.so"
+//    val inputTriFile = "F:\\dbproject\\NCI_MAPPING\\data\\dbpedia\\dbpedia.tri"
+//    val inputPredFile = "F:\\dbproject\\NCI_MAPPING\\data\\dbpedia\\dbpedia.p"
+//    val inputSoFile = "F:\\dbproject\\NCI_MAPPING\\data\\dbpedia\\dbpedia.so"
 //    val inputTriFile = "/home/lulu/new/dbpedia/dbpedia.tri"
 //    val inputPredFile = "/home/lulu/new/dbpedia/dbpedia.p"
 //    val inputSoFile = "/home/lulu/new/dbpedia/dbpedia.so"
 //    val outputDIR = "F:\\dbproject\\DataAnaysis\\VP"
     // 得到vp表 ==========================
     //id数据集url
-    val triDF = DataProcess.DataReader.getTriples(inputTriFile)
-    val predsDF = DataProcess.DataReader.getPreds(inputPredFile)
-    val sosDF = DataProcess.DataReader.getSos(inputSoFile)
+//    val triDF = DataProcess.DataReader.getTriples(inputTriFile)
+//    val predsDF = DataProcess.DataReader.getPreds(inputPredFile)
+//    val sosDF = DataProcess.DataReader.getSos(inputSoFile)
 //    println("pred count: " + predsDF.count()) // 60615
     // vp 分表
     // =============================
@@ -87,23 +90,49 @@ object Main {
 //    getQueryByPred(predsDF, excelfile7, outputDIR)
 //    getQueryByPred(predsDF, excelfile8, outputDIR)
 
-    val excelfile1 = "F:\\dbproject\\dbpediaAn\\short23.xlsx"
-    val excelfile2 = "F:\\dbproject\\dbpediaAn\\long456.xlsx"
-    val excelfile3 = "F:\\dbproject\\dbpediaAn\\long789.xlsx"
-    val excelfile4 = "F:\\dbproject\\dbpediaAn\\long101112.xlsx"
-    val excelfile5 = "F:\\dbproject\\dbpediaAn\\long131415.xlsx"
-    val excelfile6 = "F:\\dbproject\\dbpediaAn\\long161718.xlsx"
-    val excelfile7 = "F:\\dbproject\\dbpediaAn\\long192021.xlsx"
-    val excelfile8 = "F:\\dbproject\\dbpediaAn\\long22plus.xlsx"
-    val outputDIR = "F:\\dbproject\\DataAnaysis\\queryID"
-    getQueryIDByPred(predsDF, excelfile1, outputDIR)
-    getQueryIDByPred(predsDF, excelfile2, outputDIR)
-    getQueryIDByPred(predsDF, excelfile3, outputDIR)
-    getQueryIDByPred(predsDF, excelfile4, outputDIR)
-    getQueryIDByPred(predsDF, excelfile5, outputDIR)
-    getQueryIDByPred(predsDF, excelfile6, outputDIR)
-    getQueryIDByPred(predsDF, excelfile7, outputDIR)
-    getQueryIDByPred(predsDF, excelfile8, outputDIR)
+//    val excelfile1 = "F:\\dbproject\\dbpediaAn\\short23.xlsx"
+//    val excelfile2 = "F:\\dbproject\\dbpediaAn\\long456.xlsx"
+//    val excelfile3 = "F:\\dbproject\\dbpediaAn\\long789.xlsx"
+//    val excelfile4 = "F:\\dbproject\\dbpediaAn\\long101112.xlsx"
+//    val excelfile5 = "F:\\dbproject\\dbpediaAn\\long131415.xlsx"
+//    val excelfile6 = "F:\\dbproject\\dbpediaAn\\long161718.xlsx"
+//    val excelfile7 = "F:\\dbproject\\dbpediaAn\\long192021.xlsx"
+//    val excelfile8 = "F:\\dbproject\\dbpediaAn\\long22plus.xlsx"
+//    val outputDIR = "F:\\dbproject\\DataAnaysis\\queryID"
+//    getQueryIDByPred(predsDF, excelfile1, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile2, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile3, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile4, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile5, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile6, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile7, outputDIR)
+//    getQueryIDByPred(predsDF, excelfile8, outputDIR)
+    val dir = "F:\\dbproject\\DataAnaysis\\queryID"
+    val outDIR = "F:\\dbproject\\DataAnaysis\\queryjson"
+    val files = new File(dir).listFiles()
+    files.foreach(file => {
+      val path = dir + File.separator + file.getName
+      println("path: " + path)
+      val jsonList = ListBuffer.empty[JValue]
+      var index = 1
+      Source.fromFile(path).getLines().foreach(line => {
+        jsonList += JObject (
+          "id" -> JInt(index),
+          "query" -> JString(line)
+        )
+        index += 1
+      })
+      // 保存
+      // 将JSON对象列表转换为字符串
+      implicit val formats: DefaultFormats.type = DefaultFormats
+      val jsonString = compact(render(JArray(jsonList.toList)))
+      val outputfile = outDIR + File.separator + file.getName + ".json"
+      val writer = new PrintWriter(outputfile)
+      writer.write(jsonString)
+      println(file.getName + " 保存成功")
+      writer.flush()
+      writer.close()
+    })
   }
   def idToURL(triDF: DataFrame, soDF: DataFrame, predDF: DataFrame, inputfile: String, output: String): Unit = {
 
